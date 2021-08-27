@@ -1,0 +1,31 @@
+version: "3"
+services:
+  tif_writer:
+    build: .
+    environment:
+      - ZMQ_WORKER_ADDRESS=tcp://device:5560
+    volumes:
+      - $PWD:/app/
+      - $PWD/data:/data/
+    command: "python tif_writer.py --file_prefix=test_ --data_path=/data"
+    tty: true  
+  device:
+    build: .
+    environment:
+      - ZMQ_PRODUCER_DEVICE_ADDRESS=tcp://*:5559
+      - ZMQ_WORKER_DEVICE_ADDRESS=tcp://*:5560
+    volumes:
+      - $PWD:/app/
+    command: "python streamer_device.py"
+    tty: true
+  frame_producer:
+    build: .
+    environment:
+      - ZMQ_PRODUCER_ADDRESS=tcp://device:5559
+    volumes:
+      - $PWD:/app/
+    command: "python frame_producer.py --rate=10 --size_x=1024 --size_y=1024"
+    depends_on:
+      - "tif_writer"
+    tty: true
+

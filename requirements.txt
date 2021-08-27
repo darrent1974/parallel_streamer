@@ -1,0 +1,3 @@
+numpy
+tifffile
+pyzmq==19.0.2
